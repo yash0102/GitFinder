@@ -925,7 +925,15 @@ body {
 
 
 /* #FOOTER */
+.footer {
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--outline);
+  margin-block-start: 16px;
+}
 
+.copyright {
+  color: var(--on-surface-2);
+}
 
 
 
