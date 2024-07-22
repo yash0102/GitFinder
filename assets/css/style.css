@@ -664,6 +664,42 @@ body {
   }
 }
 
+.repo-skeleton, .follower-skeleton {
+  background-color: var(--alpha-5);
+}
+
+.repo-skeleton .text-1 {
+  margin-block: 12px;
+}
+
+.repo-skeleton .text-2 {
+  width: 70%;
+}
+
+.repo-skeleton .card-footer {
+  display: flex;
+  gap: var(--spacing);
+  border-block-start: 1px solid var(--alpha-5);
+}
+
+.repo-skeleton .card-footer .text-skeleton {
+  max-width: 56px;
+  flex-grow: 1;
+}
+
+.follower-skeleton {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing);
+  gap: var(--spacing);
+}
+
+.follower-skeleton .avatar-skeleton {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
 /* #SKIP TO CONTENT */
 .skip-to-content {
   position: fixed;
