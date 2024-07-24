@@ -1,6 +1,7 @@
 'use strict';
 
 import { fetchData } from "./api.js";
+import { numberToKilo } from "./module.js";
 
 /**
  * Add eventlistener on multiple elements
@@ -97,6 +98,9 @@ $searchField.addEventListener("keydown", (e) => {
 const $profileCard = document.querySelector("[data-profile-card]");
 const $repoPanel = document.querySelector("[data-repo-panel]");
 const $error = document.querySelector("[data-error]");
+const repoTabBtn = document.querySelector("#tab-1");
+
+let repoCount = 0;
 
 window.updateProfile = (profileUrl) => {
     $error.style.display = "none";
@@ -152,6 +156,9 @@ window.updateProfile = (profileUrl) => {
         repoUrl = repos_url;
         followerUrl = follower_url;
         followingUrl = following_url.replace("{/other_user}", "");
+        repoCount = public_repos;
+
+        repoTabBtn.innerHTML = `Repository (${numberToKilo(repoCount)})`;
 
         $profileCard.innerHTML = `
             <figure class="${type === "User" ? "avatar-circle" : "avatar-rounded"}  img-holder" style="--width: 280; --height: 280">
@@ -207,7 +214,7 @@ window.updateProfile = (profileUrl) => {
                     <span class="body"> <i class="fa-regular fa-file-zipper fa-lg"></i>&nbsp; ${public_repos}</span> Repositories
                 </li>
                 <li class="stats-item">
-                    <span class="body"><i class="fa-solid fa-user-group"></i>&nbsp; ${followers}</span> Followers.<span class="body">${following}</span> Following
+                    <span class="body"><i class="fa-solid fa-user-group"></i>&nbsp; ${numberToKilo(followers)}</span> Followers.<span class="body">${numberToKilo(following)}</span> Following
                 </li>
             </ul>
 
@@ -215,6 +222,8 @@ window.updateProfile = (profileUrl) => {
                 <p class="copyright">&copy; 2024 yash0102</p>
             </div>
         `;
+
+        updateRepository();
     }, () => {
         $error.style.display = "grid";
         document.body.style.overflowY = "hidden";
@@ -222,3 +231,75 @@ window.updateProfile = (profileUrl) => {
 }
 
 updateProfile(apiUrl);
+
+
+
+// REPOSITORY
+let forkedRepos = [];
+
+const updateRepository = function () {
+    fetchData(`${repoUrl}?sort=created&per_page=12`, function(data) {
+        $repoPanel.innerHTML = `<h2 class="sr-only">Repositories</h2>`;
+        forkedRepos = data.filter(item => item.fork );
+
+        const repositories = data.filter(i => !i.fork);
+
+        if (repositories.length) {
+            for (const repo of repositories) {
+                const {
+                    name, 
+                    html_url,
+                    description,
+                    private: isPrivate,
+                    language,
+                    stargazers_count: stars_count,
+                    forks_count,
+                } = repo;
+
+                const $repoCard = document.createElement("article");
+                $repoCard.classList.add("card", "repo-card");
+
+                $repoCard.innerHTML = `
+                <div class="card-body">
+                    <a href="${html_url}" target="_blank" class="card-title">
+                        <h3 class="title-3">${name}</h3>
+                    </a>
+                    ${description ? 
+                        `<p class="card-text">${description}</p>` : ""
+                    }
+
+                    <span class="badge">${isPrivate ? "Private" : "Public"}</span>
+                </div>
+
+                <div class="card-footer">
+                ${language ? 
+                    `<div class="meta-item">
+                        <span class="material-symbols-rounded" aria-hidden="true">code_blocks</span>
+                        <span class="span">${language}</span>
+                    </div>` : ""
+                }
+                    <div class="meta-item">
+                        <span class="material-symbols-rounded" aria-hidden="true">star_rate</span>
+                        <span class="span">${numberToKilo(stars_count)}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="material-symbols-rounded" aria-hidden="true">family_history</span>
+                        <span class="span">${numberToKilo(forks_count)}</span>
+                    </div>
+                </div>
+                `;
+
+                $repoPanel.appendChild($repoCard);
+            }
+        } else {
+            $repoPanel = `
+            <div class="error-content">
+                <p class="title-1">Oops! :(</p>
+                <p class="text">
+                    Doesn't have any public repositories yet.
+                </p>
+            </div>
+            `
+        }
+    });
+}
